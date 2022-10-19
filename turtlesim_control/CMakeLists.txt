@@ -28,12 +28,6 @@ ament_python_install_package(${PROJECT_NAME})
 # Install Python executables
 install(PROGRAMS
   scripts/controller.py
-  scripts/scheduler.py
-  scripts/turtle_follower.py
-  scripts/via_point_follower.py
-  scripts/action_scheduler.py
-  scripts/follower_interface.py
-  scripts/action_scheduler.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -53,8 +47,6 @@ install(TARGETS
 
 ################ INSTALL LAUNCH, ETC #################
 install(DIRECTORY
-  launch
-  config
   DESTINATION share/${PROJECT_NAME})
 
 ament_package()
