@@ -23,7 +23,6 @@ class Controller(Node):
         
         self.goal = np.array([2.0,3.0])
         self.isEnable = False
-        self.declare_parameters(namespace='',parameters=[('gain',5.0),])
 
     def timer_callback(self):
         if self.isEnable:
@@ -36,7 +35,7 @@ class Controller(Node):
         current_position = np.array([self.pose.x,self.pose.y])
         dp = self.goal-current_position
         e = np.arctan2(dp[1],dp[0])-self.pose.theta
-        K = self.get_parameter('gain').get_parameter_value().double_value
+        K = 5.0
         w = K*np.arctan2(np.sin(e),np.cos(e))
         if np.linalg.norm(dp)>0.1:
             v = 1.0
@@ -61,9 +60,9 @@ class Controller(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    controller = Controller()
-    rclpy.spin(controller)
-    controller.destroy_node()
+    node = Controller()
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__=='__main__':
