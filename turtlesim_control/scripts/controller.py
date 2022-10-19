@@ -6,9 +6,6 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 
-from std_srvs.srv import Empty
-from turtlesim_interfaces.srv import SetGoal
-
 class Controller(Node):
     def __init__(self):
         super().__init__('controller')
@@ -17,18 +14,12 @@ class Controller(Node):
         self.timer = self.create_timer(timer_period,self.timer_callback)
         self.pose_subscription = self.create_subscription(Pose,'/pose',self.pose_callback,10)
         self.pose = Pose()
-        self.set_goal_service = self.create_service(SetGoal,'/set_goal',self.set_goal_callback)
-        self.enable_service = self.create_service(Empty,'/enable',self.enable_callback)
-        self.notify_arrival_client = self.create_client(Empty,'/notify_arrival')
         
         self.goal = np.array([2.0,3.0])
-        self.isEnable = False
-        self.declare_parameters(namespace='',parameters=[('gain',5.0),])
-
+        
     def timer_callback(self):
-        if self.isEnable:
-            msg = self.control()
-            self.command_publisher.publish(msg)
+        msg = self.control()
+        self.command_publisher.publish(msg)    
     def pose_callback(self,msg):
         self.pose = msg
     def control(self):
@@ -49,21 +40,12 @@ class Controller(Node):
         msg.linear.x = v
         msg.angular.z = w
         return msg
-    def set_goal_callback(self,request,response):
-        self.goal = np.array([request.position.x,request.position.y])
-        return response
-    def enable_callback(self,request,response):
-        self.isEnable = True
-        return response
-    def send_notify_arrival_request(self):
-        req = Empty.Request()
-        self.future = self.notify_arrival_client.call_async(req)
-
+    
 def main(args=None):
     rclpy.init(args=args)
-    controller = Controller()
-    rclpy.spin(controller)
-    controller.destroy_node()
+    node = Controller()
+    rclpy.spin(node)
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__=='__main__':
