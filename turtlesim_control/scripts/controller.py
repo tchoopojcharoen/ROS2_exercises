@@ -19,9 +19,12 @@ class Controller(Node):
         self.pose = Pose()
         self.set_goal_service = self.create_service(SetGoal,'/set_goal',self.set_goal_callback)
         self.enable_service = self.create_service(Empty,'/enable',self.enable_callback)
+        self.notify_arrival_client = self.create_client(Empty,'/notify_arrival')
         
         self.goal = np.array([2.0,3.0])
         self.isEnable = False
+        self.declare_parameters(namespace='',parameters=[('gain',5.0),])
+
     def timer_callback(self):
         if self.isEnable:
             msg = self.control()
@@ -52,12 +55,15 @@ class Controller(Node):
     def enable_callback(self,request,response):
         self.isEnable = True
         return response
+    def send_notify_arrival_request(self):
+        req = Empty.Request()
+        self.future = self.notify_arrival_client.call_async(req)
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Controller()
-    rclpy.spin(node)
-    node.destroy_node()
+    controller = Controller()
+    rclpy.spin(controller)
+    controller.destroy_node()
     rclpy.shutdown()
 
 if __name__=='__main__':
