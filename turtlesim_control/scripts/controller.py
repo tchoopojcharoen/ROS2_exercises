@@ -30,15 +30,13 @@ class Controller(Node):
         current_position = np.array([self.pose.x,self.pose.y])
         dp = self.goal-current_position
         e = np.arctan2(dp[1],dp[0])-self.pose.theta
-        K = self.get_parameter('gain').get_parameter_value().double_value
+        K = 5.0
         w = K*np.arctan2(np.sin(e),np.cos(e))
         if np.linalg.norm(dp)>0.1:
             v = 1.0
         else:
             v = 0.0
             w = 0.0
-            self.isEnable = False
-            self.send_notify_arrival_request()
 
         msg.linear.x = v
         msg.angular.z = w
