@@ -3,11 +3,11 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import Twist, Point
+from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 
 from std_srvs.srv import Empty
-from turtlesim_interfaces.srv import RandGoal
+from turtlesim_interfaces.srv import SetGoal
 
 class Controller(Node):
     def __init__(self):
@@ -17,13 +17,15 @@ class Controller(Node):
         self.timer = self.create_timer(timer_period,self.timer_callback)
         self.pose_subscription = self.create_subscription(Pose,'/pose',self.pose_callback,10)
         self.pose = Pose()
-        self.set_goal_service = self.create_service(Empty,'/rand_goal',self.rand_goal_callback)
+        self.set_goal_service = self.create_service(SetGoal,'/set_goal',self.set_goal_callback)
+        self.enable_service = self.create_service(Empty,'/enable',self.enable_callback)
         
         self.goal = np.array([2.0,3.0])
-        
+        self.isEnable = False
     def timer_callback(self):
-        msg = self.control()
-        self.command_publisher.publish(msg)
+        if self.isEnable:
+            msg = self.control()
+            self.command_publisher.publish(msg)
     def pose_callback(self,msg):
         self.pose = msg
     def control(self):
@@ -44,12 +46,11 @@ class Controller(Node):
         msg.linear.x = v
         msg.angular.z = w
         return msg
-    def rand_goal_callback(self,request,response):
-        self.goal = 9.*np.random.random()
-        response.position = Point()
-        response.position.x = self.goal[0]
-        response.position.y = self.goal[1]
-        
+    def set_goal_callback(self,request,response):
+        self.goal = np.array([request.position.x,request.position.y])
+        return response
+    def enable_callback(self,request,response):
+        self.isEnable = True
         return response
 
 def main(args=None):
