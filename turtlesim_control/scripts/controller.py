@@ -3,11 +3,11 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import Twist, Point
 from turtlesim.msg import Pose
 
 from std_srvs.srv import Empty
-from turtlesim_interfaces.srv import SetGoal
+from turtlesim_interfaces.srv import RandGoal
 
 class Controller(Node):
     def __init__(self):
@@ -46,6 +46,10 @@ class Controller(Node):
         return msg
     def rand_goal_callback(self,request,response):
         self.goal = 9.*np.random.random()
+        response.position = Point()
+        response.position.x = self.goal[0]
+        response.position.y = self.goal[1]
+        
         return response
 
 def main(args=None):
