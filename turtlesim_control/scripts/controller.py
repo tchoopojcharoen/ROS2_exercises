@@ -7,7 +7,6 @@ from geometry_msgs.msg import Twist
 from turtlesim.msg import Pose
 
 from std_srvs.srv import Empty
-from turtlesim_interfaces.srv import SetGoal
 
 class Controller(Node):
     def __init__(self):
