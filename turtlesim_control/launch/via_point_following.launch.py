@@ -9,11 +9,17 @@ def generate_launch_description():
     )
     controller = Node(
         package='turtlesim_control',
-        executable='controller.py'
+        executable='controller.py',
+        namespace='turtle1',
+        parameters=[
+            {'gain':2.0},
+            {'speed':2.0},
+        ]
     )
     scheduler = Node(
         package='turtlesim_control',
-        executable='scheduler.py'
+        executable='scheduler.py',
+        namespace='turtle1'
     )
 
     launch_description = LaunchDescription()
