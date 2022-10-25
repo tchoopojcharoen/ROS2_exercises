@@ -11,6 +11,11 @@ def generate_launch_description():
     gain = LaunchConfiguration('gain')
     gain_launch_arg = DeclareLaunchArgument('gain',default_value='5.0')
     
+
+    turtlesim = Node(
+        package='turtlesim',
+        executable='turtlesim_node'
+    )
     turtlesim = Node(
         package='turtlesim',
         executable='turtlesim_node'

@@ -1,11 +1,17 @@
 #!/usr/bin/python3
 from launch import LaunchDescription
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
-from launch.actions import  ExecuteProcess, RegisterEventHandler, LogInfo, EmitEvent, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler, LogInfo, EmitEvent, OpaqueFunction
 from launch.event_handlers import OnProcessStart, OnProcessExit
 from launch.events import Shutdown
 
 def generate_launch_description():
+
+    gain = LaunchConfiguration('gain')
+    gain_launch_arg = DeclareLaunchArgument('gain',default_value='5.0')
+    
+
     turtlesim = Node(
         package='turtlesim',
         executable='turtlesim_node'
@@ -38,9 +44,23 @@ def generate_launch_description():
             ]
         )
     )
+    
+    follower = Node(
+        package='turtlesim_control',
+        executable='turtle_follower.py',
+        namespace='turtle2',
+        remappings=[('goal','/turtle1/pose')],
+        parameters=[
+            {'gain':gain},
+            {'speed':2.0},
+        ]
+    )
+
 
     launch_description = LaunchDescription()
+    launch_description.add_action(gain_launch_arg)
     launch_description.add_action(turtlesim)
     launch_description.add_action(spawn_event)
     launch_description.add_action(sim_close_event)
+    launch_description.add_action(follower)
     return launch_description
