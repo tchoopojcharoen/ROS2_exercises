@@ -10,19 +10,22 @@ from launch.actions import IncludeLaunchDescription
 from launch.substitutions import PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+import os
 
 def generate_launch_description():
 
     gain = LaunchConfiguration('gain')
     gain_launch_arg = DeclareLaunchArgument('gain',default_value='10.0')
+    turtlesim_control_pkg = get_package_share_directory('turtlesim_control')
+    param = os.path.join(turtlesim_control_pkg,'config','leader_config.yaml')
+    
     
     leader = Node(
         package='turtlesim_control',
         executable='via_point_follower.py',
         namespace='turtle1',
-        parameters=[
-            {'speed':2.0},
-        ]
+        parameters=[param]
     )
     
     scheduler = Node(
@@ -30,7 +33,7 @@ def generate_launch_description():
         executable='scheduler.py',
         namespace='turtle1'
     )
-
+    
     turtle_following_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
