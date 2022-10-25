@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="turtlesim" exec="turtlesim_node" name="simulator"/>
+    <node pkg="turtlesim_control" exec="controller.py" name="controller"/>
+    <node pkg="turtlesim_control" exec="scheduler.py" name="scheduler"/>
+</launch>
