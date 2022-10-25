@@ -29,6 +29,8 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
   scripts/controller.py
   scripts/scheduler.py
+  scripts/turtle_follower.py
+  scripts/via_point_follower.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
