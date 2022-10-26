@@ -38,6 +38,7 @@ find_package(geometry_msgs)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/RandGoal.srv"
   "srv/SetGoal.srv"
+  "srv/GetPosition.srv"
   DEPENDENCIES geometry_msgs
 )
 
