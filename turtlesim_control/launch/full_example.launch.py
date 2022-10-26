@@ -1,39 +1,27 @@
-#!/usr/bin/python3
-from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler, LogInfo, EmitEvent, OpaqueFunction
-from launch.event_handlers import OnProcessStart, OnProcessExit
-from launch.events import Shutdown
-
+#!usr/bin/python3
+from launch_ros.substitutions import FindPackageShare
 from launch.actions import IncludeLaunchDescription
 from launch.substitutions import PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from ament_index_python.packages import get_package_share_directory
-import os
+from launch import LaunchDescription
+from launch_ros.actions import Node
 
 def generate_launch_description():
-
-    gain = LaunchConfiguration('gain')
-    gain_launch_arg = DeclareLaunchArgument('gain',default_value='10.0')
-    turtlesim_control_pkg = get_package_share_directory('turtlesim_control')
-    param = os.path.join(turtlesim_control_pkg,'config','leader_config.yaml')
-    
-    
-    leader = Node(
-        package='turtlesim_control',
-        executable='via_point_follower.py',
-        namespace='turtle1',
-        parameters=[param]
-    )
-    
     scheduler = Node(
         package='turtlesim_control',
         executable='scheduler.py',
-        namespace='turtle1'
     )
-    
+
+
+    leader = Node(
+        package='turtlesim_control',
+        executable='via_point_follower.py',
+        remappings=[
+            ('/pose','/turtle1/pose'),
+            ('/cmd_vel','/turtle1/cmd_vel'),
+        ]
+    )
+
     turtle_following_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             PathJoinSubstitution([
@@ -43,16 +31,11 @@ def generate_launch_description():
             ])
         ]),
         launch_arguments={
-            'gain': gain,
-            'speed':'0.75'
+            'new_background_r': '0',
         }.items()
     )
 
-    launch_description = LaunchDescription()
-    launch_description.add_action(gain_launch_arg)
-    launch_description.add_action(turtle_following_launch)
-    launch_description.add_action(leader)
-    launch_description.add_action(scheduler)
+    entity_to_run = [scheduler,leader,turtle_following_launch]
+    return LaunchDescription(entity_to_run)
+
     
-    
-    return launch_description

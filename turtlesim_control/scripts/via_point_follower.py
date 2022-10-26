@@ -13,8 +13,8 @@ class ViaPointFollower(BaseController):
     ROS Interfaces:
         Publishers : 
         Subscribers : 
-        Service Servers : set_goal, enable, get_position
-        Service Clients : notify_arrival
+        Service Servers : /set_goal, /enable, /get_position
+        Service Clients : /notify_arrival
         Action Servers :
         Action Clients :
         Parameters : 
@@ -25,13 +25,13 @@ class ViaPointFollower(BaseController):
         # construct base controller
         super().__init__('via_point_follower')
         # create and add ROS service server /set_goal
-        self.set_goal_service = self.create_service(SetGoal,'set_goal',self.set_goal_callback)
+        self.set_goal_service = self.create_service(SetGoal,'/set_goal',self.set_goal_callback)
         # create and add ROS service server /enable
-        self.enable_service = self.create_service(Empty,'enable',self.enable_callback)
+        self.enable_service = self.create_service(Empty,'/enable',self.enable_callback)
         # create and add ROS service server /get_position
-        self.get_position = self.create_service(GetPosition,'get_position',self.get_position_callback)
+        self.get_position = self.create_service(GetPosition,'/get_position',self.get_position_callback)
         # create and add ROS service client /notify_arrival
-        self.notify_arrival_client = self.create_client(Empty,'notify_arrival')
+        self.notify_arrival_client = self.create_client(Empty,'/notify_arrival')
     def set_goal_callback(self,request,response):
         #  assign goal
         self.goal = np.array([request.position.x,request.position.y])

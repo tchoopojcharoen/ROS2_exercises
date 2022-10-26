@@ -1,0 +1,5 @@
+geometry_msgs/Point goal
+---
+float64 distance
+---
+float64 elasped_time

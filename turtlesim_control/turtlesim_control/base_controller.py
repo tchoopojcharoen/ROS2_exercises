@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # import libraries
 import numpy as np
 from rclpy.node import Node
@@ -13,8 +11,8 @@ class BaseController(Node):
     for turtlesim in ROS2. 
 
     ROS Interfaces:
-        Publishers : cmd_vel
-        Subscribers : pose
+        Publishers : /cmd_vel
+        Subscribers : /pose
         Service Servers :
         Service Clients :
         Action Servers :
@@ -32,14 +30,14 @@ class BaseController(Node):
         # construct node
         super().__init__(name)
         # create and add ROS publisher for /cmd_vel
-        self.command_publisher = self.create_publisher(Twist,'cmd_vel',10)
+        self.command_publisher = self.create_publisher(Twist,'/cmd_vel',10)
         # create a timer for the ROS publisher 
         timer_period = 0.1
         self.timer = self.create_timer(timer_period,self.timer_callback)
         # create a ROS subscriber for /pose 
-        self.pose_subscription = self.create_subscription(Pose,'pose',self.pose_callback,10)
+        self.pose_subscription = self.create_subscription(Pose,'/pose',self.pose_callback,10)
         # declare 'gain' as ROS parameter
-        self.declare_parameters(namespace='',parameters=[('gain',5.0),('speed',1.0)])
+        self.declare_parameters(namespace='',parameters=[('gain',5.0),])
         # assign default values for the attributes
         self.pose = Pose()
         self.goal = None
@@ -75,7 +73,7 @@ class BaseController(Node):
         
         # if current position is relatively far from the goal
         if np.linalg.norm(dp)>0.1:
-            v = self.get_parameter('speed').value
+            v = 1.0
         # if current position is close to the goal
         else:
             v = 0.0

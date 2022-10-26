@@ -7,7 +7,7 @@ from turtlesim.msg import Pose
 class TurtleFollower(BaseController):
     def __init__(self):
         super().__init__('turtle_follower')
-        self.goal_subscription = self.create_subscription(Pose,'goal',self.goal_callback,10)
+        self.goal_subscription = self.create_subscription(Pose,'/goal',self.goal_callback,10)
         self.isEnable = True
     def goal_callback(self,msg):
         self.goal = np.array([msg.x,msg.y])

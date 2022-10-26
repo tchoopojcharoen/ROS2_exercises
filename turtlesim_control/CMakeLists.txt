@@ -31,6 +31,9 @@ install(PROGRAMS
   scripts/scheduler.py
   scripts/turtle_follower.py
   scripts/via_point_follower.py
+  scripts/action_scheduler.py
+  scripts/follower_interface.py
+  scripts/action_scheduler.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
