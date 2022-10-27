@@ -5,7 +5,7 @@ import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import TransformStamped 
-from tf2_ros import TransformBroadcaster # added in STB step
+from tf2_ros import TransformBroadcaster, StaticTransformBroadcaster
 from math import sin, cos
 from turtlesim.msg import Pose
 
@@ -21,9 +21,16 @@ class FramePublisher(Node):
 
         # add TransformBroadcaster here
         self.broadcaster = TransformBroadcaster(self)  # attach to Node
-        
+        self.staticBroadcaster = StaticTransformBroadcaster(self)
+        t = TransformStamped()
+        t.header.stamp = self.get_clock().now().to_msg()  # time stamp. get current time and change to msg
+        t.header.frame_id = 'turtle1'
+
+        t.child_frame_id = 'turtle1/base_footprint'
+        self.staticBroadcaster.sendTransform(t)
         # Subscribe to a turtle{1}{2}/pose topic and call handle_turtle_pose
         # callback function on each message
+
         self.subscription = self.create_subscription(Pose,f'/{self.turtlename}/pose',self.handle_turtle_pose,1)
         
     def quaternion_from_euler(self, roll, pitch, yaw):
