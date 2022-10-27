@@ -24,9 +24,9 @@ class FramePublisher(Node):
         self.staticBroadcaster = StaticTransformBroadcaster(self)
         t = TransformStamped()
         t.header.stamp = self.get_clock().now().to_msg()  # time stamp. get current time and change to msg
-        t.header.frame_id = 'turtle1'
+        t.header.frame_id = self.turtlename
 
-        t.child_frame_id = 'turtle1/base_footprint'
+        t.child_frame_id = self.turtlename+'/base_footprint'
         self.staticBroadcaster.sendTransform(t)
         # Subscribe to a turtle{1}{2}/pose topic and call handle_turtle_pose
         # callback function on each message
