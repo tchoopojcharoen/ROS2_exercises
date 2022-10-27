@@ -4,8 +4,6 @@ import sys
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import TransformStamped 
-from tf2_ros import TransformBroadcaster, StaticTransformBroadcaster # added in STB step
 from math import sin, cos
 from turtlesim.msg import Pose
 
@@ -17,32 +15,14 @@ class FramePublisher(Node):
 
         # Declare and acquire `turtlename` parameter
         self.declare_parameter('turtlename', sys.argv[1] )
-        self.turtlename = self.get_parameter(
-            'turtlename').get_parameter_value().string_value
+        self.turtlename = self.get_parameter('turtlename').get_parameter_value().string_value
 
-        # add the following line (2)
-        self.broadcaster = TransformBroadcaster(self)  # attach to Node
-        # add following lines in STB
-        self.static_broadcaster = StaticTransformBroadcaster(self) # add in STB step
-        t = TransformStamped()
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = self.turtlename
-        if self.turtlename=='turtle1':
-            t.child_frame_id = 'base_footprint1'
-        else:
-            t.child_frame_id = 'base_footprint2'
-        # t.transform defaulted in 0 so don't have to assign it
-        self.static_broadcaster.sendTransform(t)
+        # add TransformBroadcaster here
         
         # Subscribe to a turtle{1}{2}/pose topic and call handle_turtle_pose
         # callback function on each message
-        self.subscription = self.create_subscription(
-            Pose,
-            f'/{self.turtlename}/pose',  # f means format
-            self.handle_turtle_pose,
-            1)
-        self.subscription
-
+        self.subscription = self.create_subscription(Pose,f'/{self.turtlename}/pose',self.handle_turtle_pose,1)
+        
     def quaternion_from_euler(self, roll, pitch, yaw):
         """
         Converts euler roll, pitch, yaw to quaternion (w in last place)
@@ -65,22 +45,8 @@ class FramePublisher(Node):
         return q
 
     def handle_turtle_pose(self, msg):  #  add this callback (3)
-        t = TransformStamped()  # according to slide (67)
-
-        t.header.stamp = self.get_clock().now().to_msg()  # time stamp. get current time and change to msg
-        t.header.frame_id = 'world'
-
-        t.child_frame_id = self.turtlename
-        t.transform.translation.x = msg.x 
-        t.transform.translation.y = msg.y
-        t.transform.translation.z = 0.0
-        q = self.quaternion_from_euler(0,0,msg.theta)
-        t.transform.rotation.w = q[0] 
-        t.transform.rotation.x = q[1] 
-        t.transform.rotation.y = q[2] 
-        t.transform.rotation.z = q[3] 
-
-        self.broadcaster.sendTransform(t)  # broadcast 
+        # broadcast here
+        pass  # broadcast 
 
 def main():
     rclpy.init()
