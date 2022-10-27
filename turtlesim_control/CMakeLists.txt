@@ -34,6 +34,7 @@ install(PROGRAMS
   scripts/action_scheduler.py
   scripts/follower_interface.py
   scripts/action_scheduler.py
+  scripts/tf_broadcaster.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
