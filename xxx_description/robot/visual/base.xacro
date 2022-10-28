@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="$(find xxx_description)/urdf/visual/properties.xacro"/>
+  <xacro:include filename="$(find xxx_description)/robot/visual/properties.xacro"/>
   <xacro:macro name="base_visual_rviz" params="namespace">
     <visual>
       <origin xyz="0.0 0.0 ${-BASE_MESH_Z_OFFSET}" rpy="0.0 0.0 ${PI/2}"/>
