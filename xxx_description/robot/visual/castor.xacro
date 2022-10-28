@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="$(find xxx_description)/urdf/visual/properties.xacro"/>
+  <xacro:include filename="$(find xxx_description)/robot/visual/properties.xacro"/>
   
   <!-- Castor Visual-->
   <xacro:macro name="castor_visual" params="namespace">
