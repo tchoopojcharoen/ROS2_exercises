@@ -23,11 +23,16 @@ def launch_action_rviz(pkg_path,rviz_file_name):
         arguments=['-d', rviz_file_path],
         output='screen')
     return rviz
-    
+
 def launch_action_robot_state_publisher(pkg_path,robot_file):
-    urdf = os.path.join(pkg_path, 'robot',robot_file)
-    with open(urdf, 'r') as infp:
-        robot_desc = infp.read()
+    file_path = os.path.join(pkg_path, 'robot',robot_file)
+    if robot_file.endswith('.urdf'):
+        with open(file_path, 'r') as infp:
+            robot_desc = infp.read()
+    elif robot_file.endswith('.xacro'):
+        robot_desc = xacro.process_file(file_path).toxml()
+        #robot_desc = xacro.process_file(robot_desc_path,mappings={'robot_name' : 'xxx1'}).toxml()
+    
     robot_state_publisher = Node(package='robot_state_publisher',
                                   executable='robot_state_publisher',
                                   output='screen',
@@ -40,7 +45,7 @@ def generate_launch_description():
     # Get the launch directory
     description_pkg = get_package_share_directory('xxx_description')
     rviz = launch_action_rviz(description_pkg,'config.rviz')
-    robot_state_publisher = launch_action_robot_state_publisher(description_pkg,'turtle1.urdf')
+    robot_state_publisher = launch_action_robot_state_publisher(description_pkg,'visual/turtle1.xacro')
     
     
     full_example_launch = IncludeLaunchDescription(
