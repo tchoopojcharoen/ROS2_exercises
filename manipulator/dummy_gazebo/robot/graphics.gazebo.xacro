@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="gazebo_graphics_link" params="link_id">
+    <gazebo reference="link_${link_id}">
+      <mu1>0.2</mu1>
+      <mu2>0.2</mu2>
+      <material>Gazebo/White</material>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- Contents-->
+  <xacro:macro name="gazebo_graphics" params="">
+    <gazebo reference="link_0">
+      <mu1>0.2</mu1>
+      <mu2>0.2</mu2>
+      <material>Gazebo/White</material>
+    </gazebo>
+    <xacro:gazebo_graphics_link link_id="1"/>
+    <xacro:gazebo_graphics_link link_id="2"/>
+    <xacro:gazebo_graphics_link link_id="3"/>   
+  </xacro:macro>
+</robot>

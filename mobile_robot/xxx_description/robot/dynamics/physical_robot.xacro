@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <xacro:include filename="$(find xxx_description)/robot/dynamics/wheel.xacro"/>
+  <xacro:include filename="$(find xxx_description)/robot/dynamics/base.xacro"/>
+  <xacro:include filename="$(find xxx_description)/robot/dynamics/castor.xacro"/>
+  <xacro:macro name="physical_robot" params="">
+    <xacro:base/>
+    <xacro:wheel_set/>
+    <xacro:castor_set/>
+  </xacro:macro>
+</robot>

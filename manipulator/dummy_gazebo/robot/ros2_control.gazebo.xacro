@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="controller_plugins" params="namespace">
+    <ros2_control name="GazeboSystem" type="system">
+      <hardware>
+        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      </hardware>
+      <xacro:macro name="robot_joint" params="link_id">
+        <joint name="joint_${link_id}">
+          <command_interface name="position">
+              <param name="min">-3.14</param>
+              <param name="max">3.14</param>
+          </command_interface>
+          <state_interface name="position">
+              <param name="initial_value">0.0</param>
+          </state_interface>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </xacro:macro>
+      <xacro:robot_joint link_id="1"/>
+      <xacro:robot_joint link_id="2"/>
+      <xacro:robot_joint link_id="3"/>
+    </ros2_control>
+
+    <!--ros2_control name="GazeboSystem" type="system">
+      <hardware>
+        <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+      </hardware>
+
+      <xacro:macro name="wheel_joint" params="joint_name namespace">
+        <joint name="${namespace}/${joint_name}">
+          <command_interface name="effort"/>
+          <command_interface name="velocity"/>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </xacro:macro>
+      
+      <xacro:wheel_joint joint_name="${left_joint}" namespace="${namespace}"/>
+      <xacro:wheel_joint joint_name="${right_joint}" namespace="${namespace}"/>
+
+
+    </ros2_control-->
+
+    
+    <gazebo>
+      <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_joint_control">
+        <parameters>$(find dummy_gazebo)/config/${namespace}_controller_config.yaml</parameters>
+        <ros>
+          <namespace>/${namespace}</namespace>
+          <!--remapping>/tf:=/${namespace}/tf</remapping-->
+        </ros>
+      </plugin>
+      
+    </gazebo>
+  </xacro:macro>
+    
+
+
+    
+</robot>
