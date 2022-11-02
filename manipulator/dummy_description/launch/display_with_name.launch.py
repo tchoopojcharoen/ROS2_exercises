@@ -15,7 +15,80 @@ If not, see <https://www.gnu.org/licenses/>.
 created by Thanacha Choopojcharoen at CoXsys Robotics (2022)
 """
 
-
-
-
-
+from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch_ros.actions import Node
+import os, yaml
+import xacro
+from dummy_description.DH2Transform import DH2Transform
+class ShareFile():
+    def __init__(self,package,folder,file):
+        self.package_name = package
+        self.package_path = get_package_share_directory(package)
+        self.folder = folder
+        self.file = file
+        self.path = os.path.join(self.package_path,folder,file)
+def launch_action_rviz(rviz_config,robot_name=''):
+    # generate launch description for rviz
+    if robot_name:
+        new_rviz_file_path = os.path.join(
+            rviz_config.package_path,
+            rviz_config.folder,
+            robot_name+'_'+rviz_config.file
+        )
+        with open(rviz_config.path,'r') as file:
+            rviz_param = yaml.load(file,yaml.SafeLoader)
+        rviz_param['Visualization Manager']['Global Options']['Fixed Frame'] = robot_name+'/world'
+        for display in rviz_param['Visualization Manager']['Displays']:
+            if display['Class']=='rviz_default_plugins/RobotModel':
+                display['Description Topic']['Value'] = robot_name+'/robot_description'
+                display['TF Prefix'] = robot_name
+        with open(new_rviz_file_path,'w') as file:
+            yaml.dump(rviz_param,file)
+    else:
+        new_rviz_file_path = rviz_config.path
+    rviz = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz',
+        arguments=['-d', new_rviz_file_path],
+        output='screen')
+    return rviz
+def launch_action_robot(dh_parameters,robot_description,robot_name=''):
+    
+    # generate properties yaml file 
+    DH2Transform(dh_parameters.package_name,dh_parameters.folder,dh_parameters.file) 
+    robot_desc_xml = xacro.process_file(robot_description.path).toxml()
+    parameters = [{'robot_description':robot_desc_xml}]
+    if robot_name:
+        parameters.append({'frame_prefix':robot_name+'/'})
+    
+    robot_state_publisher = Node(package='robot_state_publisher',
+                                  executable='robot_state_publisher',
+                                  output='screen',
+                                  parameters=parameters,
+                                  namespace=robot_name
+    )
+    joint_state_publisher_gui = Node(
+        package='joint_state_publisher_gui',
+        executable='joint_state_publisher_gui',
+        namespace=robot_name
+    )
+    return [robot_state_publisher,joint_state_publisher_gui]
+    
+def generate_launch_description():
+    dh_parameters = ShareFile('dummy_description','config','DH_parameters.yaml')
+    robot_description = ShareFile('dummy_description','robot','visual/robot_graphics.xacro')
+    rviz_config = ShareFile('dummy_description','config','_dummy.rviz')
+    
+    robot_name = 'dummy_1'
+    rviz = launch_action_rviz(rviz_config,robot_name)
+    actions = launch_action_robot(dh_parameters,robot_description,robot_name)
+    
+    # Launch Description
+    launch_description = LaunchDescription()
+    for action in actions:
+        launch_description.add_action(action)
+    launch_description.add_action(rviz)
+    
+    return launch_description
