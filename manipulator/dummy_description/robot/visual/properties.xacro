@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dummy">
+ 
+  <!-- File paths-->
+  <xacro:property name="kinematics_params_path" value="$(find dummy_description)/config/properties.yaml"/> 
+  <xacro:property name="visual_params_path" value="$(find dummy_description)/config/visual_parameters.yaml"/> 
+  
+  <xacro:property name="kp" value="${load_yaml(kinematics_params_path)}"/> 
+  <xacro:property name="vp" value="${load_yaml(visual_params_path)}"/> 
+  
+  <!-- Mathematics Constants -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <!-- Manipulator Visual Properties -->
+  <xacro:property name="TRANSFORM" value="${kp['transform']}"/>
+  <xacro:property name="EE_POSITION" value="${kp['ee_position']}"/>
+  <xacro:property name="EE_ORIENTATION" value="${kp['ee_orientation']}"/>
+  <xacro:property name="TYPE" value="${kp['types']}"/>
+
+  <xacro:property name="OFFSET" value="${vp['offset']}"/>
+  <xacro:property name="SIZE" value="${vp['size']}"/>
+  <xacro:property name="COLOR" value="${vp['color']}"/>
+  
+  <!-- Gripper Visual Properties -->
+  <!-- Camera Visual Properties -->
+</robot>

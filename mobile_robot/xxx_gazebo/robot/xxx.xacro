@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="xxx">
+  
+  <xacro:include filename="$(find xxx_description)/robot/dynamics/physical_robot.xacro"/>
+  <xacro:include filename="$(find xxx_gazebo)/robot/graphics.gazebo.xacro"/>
+  <xacro:include filename="$(find xxx_gazebo)/robot/sensor.gazebo.xacro"/>
+  <xacro:include filename="$(find xxx_gazebo)/robot/ros2_control.gazebo.xacro"/>
+  
+  <xacro:physical_robot/>
+  <xacro:gazebo_graphics/>
+  
+</robot>

@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="link_mesh_visual" params="path link_id">
+        <visual>
+            <geometry>
+                <mesh filename="${path}"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${COLOR[link_id-1]}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+    <xacro:macro name="link_box_visual" params="link_id">
+        <visual>
+            <origin xyz="${OFFSET[link_id-1]}"/>
+            <geometry>
+                <box size="${SIZE[link_id-1]}"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${COLOR[link_id-1]}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+    <xacro:macro name="link_visual_0" params="">
+        <visual>
+            <origin xyz="0.0 0.0 0.05"/>
+            <geometry>
+                <!--mesh filename="${path}"/-->
+                <box size="1.0 1.0 0.1"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="1 1 1 1"/>
+            </material>
+        </visual>
+    </xacro:macro>
+    <xacro:macro name="base_offset" params="">
+        <joint name="base_offset" type="fixed">
+            <parent link="world"/>
+            <child link="link_0"/>
+        </joint>
+    </xacro:macro>
+    <xacro:macro name="robot_joint" params="link_id">
+        <joint name="joint_${link_id}" type="${TYPE[link_id-1]}">
+            <parent link="link_${link_id-1}"/>
+            <child link="link_${link_id}"/>
+            <origin xyz="${TRANSFORM[link_id-1]['position']}" rpy="${TRANSFORM[link_id-1]['orientation']}"/> 
+            <axis xyz="0 0 1"/>
+            <limit lower="-3.14159" upper="3.14159" velocity="50.0" effort="1000.0"/>
+        </joint>
+
+    </xacro:macro>
+    <xacro:macro name="end_effector_offset" params="">
+        <joint name="end_effector_offset" type="fixed">
+            <parent link="link_3"/>
+            <child link="end_effector"/>
+            <origin xyz="${EE_POSITION}" rpy="${EE_ORIENTATION}"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="manipulator_graphics" params="package">
+        <link name="world"/>
+        <link name="link_0">
+            <xacro:link_visual_0 />
+        </link>
+        <link name="link_1">
+            <xacro:link_box_visual link_id="1" />
+        </link>
+
+        <link name="link_2">
+            <xacro:link_box_visual link_id="2" />
+        </link>
+
+        <link name="link_3">
+            <xacro:link_box_visual link_id="3" />
+        </link>
+
+        <!--link name="link_0">
+            <xacro:link_visual path="package://${package}/meshes/link_0"/>
+        </link>
+        <link name="link_1">
+            <xacro:link_visual path="package://${package}/meshes/link_1"/>
+        </link>
+        <link name="link_2">
+            <xacro:link_visual path="package://${package}/meshes/link_2"/>
+        </link>
+        <link name="link_3">
+            <xacro:link_visual path="package://${package}/meshes/link_3"/>
+        </link-->
+
+        <link name="end_effector"/>
+        
+        <xacro:base_offset/>
+        <xacro:robot_joint link_id="1"/>
+        <xacro:robot_joint link_id="2"/>
+        <xacro:robot_joint link_id="3"/>
+        <xacro:end_effector_offset/>
+    </xacro:macro>
+</robot>

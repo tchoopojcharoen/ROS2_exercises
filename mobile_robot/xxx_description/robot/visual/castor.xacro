@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find xxx_description)/robot/visual/properties.xacro"/>
+  
+  <!-- Castor Visual-->
+  <xacro:macro name="castor_visual" params="">
+    <visual>
+      <geometry>
+        <cylinder radius="${CASTOR_RADIUS}" length="${CASTOR_THICKNESS}"/>
+      </geometry>
+      <material name="castor_color">
+        <color rgba="${CASTOR_COLOR}"/>
+      </material>
+    </visual>
+  </xacro:macro>
+
+  <!-- Castor Joint-->
+  <xacro:macro name="castor_joint" params="name translation_x translation_y">
+    <joint name="${name}_castor_joint" type="continuous">
+      <origin 
+        xyz="
+          ${translation_x} 
+          ${translation_y} 
+          ${CASTOR_RADIUS-(BASE_HEIGHT/2+BASE_ELEVATION)+0.001}
+        "
+        rpy="${-PI/2} 0 0"
+      />
+      <parent link="base_link"/>
+      <child link="${name}_castor"/>
+      <axis xyz="0.0 0.0 1.0"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- Castor rviz-->
+  <xacro:macro name="castor_rviz" params="name translation_x translation_y">
+    <link name="${name}_castor">
+      <xacro:castor_visual/>
+    </link>
+    <xacro:castor_joint
+      name="${name}"
+      translation_x="${translation_x}"
+      translation_y="${translation_y}"
+    />
+  </xacro:macro>
+  <!-- Contents-->
+  <xacro:macro name="castor_set_visual" params="">
+    <xacro:castor_rviz 
+      name="right_front"
+      translation_x="${CASTOR_SEPARATION_X/2}"
+      translation_y="${CASTOR_SEPARATION_Y/2}"
+    />
+    <xacro:castor_rviz 
+      name="left_front"
+      translation_x="${CASTOR_SEPARATION_X/2}"
+      translation_y="${-CASTOR_SEPARATION_Y/2}"
+    />
+    <xacro:castor_rviz 
+      name="right_rear"
+      translation_x="${-CASTOR_SEPARATION_X/2}"
+      translation_y="${CASTOR_SEPARATION_Y/2}"
+    />
+    <xacro:castor_rviz 
+      name="left_rear"
+      translation_x="${-CASTOR_SEPARATION_X/2}"
+      translation_y="${-CASTOR_SEPARATION_Y/2}"
+    />
+  </xacro:macro>
+  
+</robot>

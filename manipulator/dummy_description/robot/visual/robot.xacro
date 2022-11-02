@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="dummy">
+    <xacro:macro name="dummy_rviz" params="package">
+        <xacro:property name="visual_path" value="$(find ${package})/robot/visual"/>
+        
+        <!-- Include all model properties-->
+        <xacro:include filename="${visual_path}/properties.xacro"/>
+        
+        <!-- Add manipulator -->
+        <xacro:include filename="${visual_path}/manipulator.xacro"/>
+        <xacro:manipulator_graphics package="${package}"/>
+        
+        <!-- Add sensor link -->
+        <!--xacro:include filename="${visual_path}/sensor.xacro"/>
+        <xacro:sensor_link/-->
+    </xacro:macro>
+</robot>
