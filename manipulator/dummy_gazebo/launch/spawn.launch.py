@@ -66,10 +66,25 @@ def launch_action_robot_spawner(dh_parameters,robot_description,position):
         output='both',
         parameters=parameters
     )    
-    
+    spawner = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        output='screen',
+        arguments=[
+            '-topic','/robot_description',
+            '-entity','/dummy',
+            '-x',str(position[0]),
+            '-y',str(position[1]),
+            '-z',str(position[2]),
+            '-R','0',
+            '-P','0',
+            '-Y','0',
+        ]
+    )
     
     actions = []
     actions.append(robot_state_publisher)
+    actions.append(spawner)
     
     return actions
 def recursive_yaml(value):
