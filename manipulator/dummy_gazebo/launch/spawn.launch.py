@@ -53,70 +53,113 @@ def launch_action_gazebo():
         ])
     )
     return gazebo_server,gazebo_client
-def launch_action_robot_spawner(dh_parameters,robot_description,position):
+def launch_action_robot_spawner(dh_parameters,robot_description,controller,position,robot_name=''):
     # robot_state_publisher
     DH2Transform(dh_parameters.package_name,dh_parameters.folder,dh_parameters.file) 
     parameters = []
-    robot_desc_xml = xacro.process_file(robot_description.path).toxml()
+    if robot_name:
+        robot_desc_xml = xacro.process_file(robot_description.path,mappings={'robot_name':robot_name}).toxml()
+        parameters.append({'frame_prefix':robot_name+'/'})
+    else:
+        robot_desc_xml = xacro.process_file(robot_description.path).toxml()
     parameters.append({'robot_description':robot_desc_xml})
     parameters.append({'use_sim_time': True})
+    
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='both',
-        parameters=parameters
+        parameters=parameters,
+        namespace=robot_name
     )    
+
+    controller_config = generate_controller_config(controller,robot_name)
+
     spawner = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
         output='screen',
         arguments=[
-            '-topic','/robot_description',
-            '-entity','/dummy',
-            '-x',str(position[0]),
-            '-y',str(position[1]),
-            '-z',str(position[2]),
-            '-R','0',
-            '-P','0',
-            '-Y','0',
+            '-topic', robot_name+'/robot_description',
+            '-entity', robot_name+'/dummy',
+            '-x', str(position[0]),
+            '-y', str(position[1]),
+            '-z', str(position[2]),
+            '-R', '0.0',
+            '-P', '0.0',
+            '-Y', '0.0',
         ]
+    )
+
+    joint_trajectory_controller = Node(
+        package='controller_manager',
+        executable='spawner.py',
+        arguments=['joint_trajectory_position_controller','--controller-manager',robot_name+'/controller_manager']
+    )
+
+    joint_state_broadcaster = Node(
+        package='controller_manager',
+        executable='spawner.py',
+        arguments=['joint_state_broadcaster','--controller-manager',robot_name+'/controller_manager']
+    )
+
+    trajectory_generator = Node(
+        package='dummy_control',
+        executable='trajectory_generator.py',
+        namespace=robot_name,
+        parameters=[controller_config]
     )
     
     actions = []
     actions.append(robot_state_publisher)
     actions.append(spawner)
-    
+    actions.append(joint_trajectory_controller)
+    actions.append(trajectory_generator)
+    actions.append(joint_state_broadcaster)
+
     return actions
-def recursive_yaml(value):
-    if isinstance(value,dict):
-        new_dict = dict()
-        for k,v in value.items():
-            new_dict[k] = recursive_yaml(v)
-        return new_dict
-    if isinstance(value,list):
-        new_list = list()
-        for e in value:
-            new_list.append(e)
-        return new_list
-    else:
-        return value
-def generate_controller_config(controller,namespace):
-    pass
+def generate_controller_config(controller:ShareFile,namespace):
+    with open(controller.path,'r') as file:
+        doc = yaml.load(file,yaml.SafeLoader)
+    ###
+    new_doc = {namespace:doc}
+    ###
+    new_controller_path = os.path.join(controller.package_path,controller.folder,namespace+controller.file)
+    with open(new_controller_path,'w') as file:
+        yaml.dump(new_doc,file)
+    return new_controller_path
 def generate_launch_description():
     dh_parameters = ShareFile('dummy_description','config','DH_parameters.yaml')
     robot_description = ShareFile('dummy_gazebo','robot','dummy.xacro')
+    controller = ShareFile('dummy_gazebo','config','_controller_config.yaml')
     
     gazebo_server,gazebo_client = launch_action_gazebo()
-    actions = launch_action_robot_spawner(
-        dh_parameters,
-        robot_description,
-        [0.0,0.0,0.0]
-    )
     launch_description = LaunchDescription()
     launch_description.add_action(gazebo_server)
     launch_description.add_action(gazebo_client)
-    for action in actions:
-        launch_description.add_action(action)
     
+    N = 3
+    for i in range(N):
+        robot_name = 'dummy_'+str(i+1)
+        actions = launch_action_robot_spawner(
+            dh_parameters,
+            robot_description,
+            controller,
+            [0.0,-2*i,0.0],
+            robot_name
+        )
+        if i == 0 :
+            for action in actions:
+                launch_description.add_action(action)  
+        else:
+            spawn_event = RegisterEventHandler(
+                OnProcessExit(
+                    target_action=previous_action,
+                    on_exit= TimerAction(period=2.0,actions=actions)
+                )
+            )
+            launch_description.add_action(spawn_event)
+        previous_action = actions[-1]
+
     return launch_description
     

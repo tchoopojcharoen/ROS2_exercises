@@ -31,11 +31,6 @@ class ShareFile():
 def launch_action_rviz(rviz_config,robot_name=''):
     # generate launch description for rviz
     if robot_name:
-        new_rviz_file_path = os.path.join(
-            rviz_config.package_path,
-            rviz_config.folder,
-            robot_name+'_'+rviz_config.file
-        )
         with open(rviz_config.path,'r') as file:
             rviz_param = yaml.load(file,yaml.SafeLoader)
         rviz_param['Visualization Manager']['Global Options']['Fixed Frame'] = robot_name+'/world'
@@ -43,15 +38,20 @@ def launch_action_rviz(rviz_config,robot_name=''):
             if display['Class']=='rviz_default_plugins/RobotModel':
                 display['Description Topic']['Value'] = robot_name+'/robot_description'
                 display['TF Prefix'] = robot_name
-        with open(new_rviz_file_path,'w') as file:
+        new_rviz_config_path = os.path.join(
+            rviz_config.package_path,
+            rviz_config.folder,
+            robot_name+'_'+rviz_config.file
+        )
+        with open(new_rviz_config_path,'w') as file:
             yaml.dump(rviz_param,file)
     else:
-        new_rviz_file_path = rviz_config.path
+        new_rviz_config_path = rviz_config.path
     rviz = Node(
         package='rviz2',
         executable='rviz2',
         name='rviz',
-        arguments=['-d', new_rviz_file_path],
+        arguments=['-d', new_rviz_config_path],
         output='screen')
     return rviz
 def launch_action_robot(dh_parameters,robot_description,robot_name=''):
@@ -62,7 +62,6 @@ def launch_action_robot(dh_parameters,robot_description,robot_name=''):
     parameters = [{'robot_description':robot_desc_xml}]
     if robot_name:
         parameters.append({'frame_prefix':robot_name+'/'})
-    
     robot_state_publisher = Node(package='robot_state_publisher',
                                   executable='robot_state_publisher',
                                   output='screen',

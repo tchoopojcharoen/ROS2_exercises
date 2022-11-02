@@ -15,3 +15,123 @@ If not, see <https://www.gnu.org/licenses/>.
 created by Thanacha Choopojcharoen at CoXsys Robotics (2022)
 """
 
+import os, yaml
+import xacro
+from launch import LaunchDescription
+from launch_ros.substitutions import FindPackageShare
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.actions import Node
+from launch.actions import IncludeLaunchDescription, RegisterEventHandler, LogInfo, TimerAction
+from launch.event_handlers import OnProcessStart, OnProcessExit, OnExecutionComplete
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+from dummy_description.DH2Transform import DH2Transform
+class ShareFile():
+    def __init__(self,package,folder,file):
+        self.package_name = package
+        self.package_path = get_package_share_directory(package)
+        self.folder = folder
+        self.file = file
+        self.path = os.path.join(self.package_path,folder,file)
+def launch_action_gazebo():
+    gazebo_server = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare('gazebo_ros'),
+                'launch',
+                'gzserver.launch.py'
+            ])
+        ])
+    )
+    gazebo_client = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([
+            PathJoinSubstitution([
+                FindPackageShare('gazebo_ros'),
+                'launch',
+                'gzclient.launch.py'
+            ])
+        ])
+    )
+    return gazebo_server,gazebo_client
+def launch_action_robot_spawner(dh_parameters,robot_description,position,robot_name=''):
+    # robot_state_publisher
+    DH2Transform(dh_parameters.package_name,dh_parameters.folder,dh_parameters.file) 
+    parameters = []
+    robot_desc_xml = xacro.process_file(robot_description.path).toxml()
+    parameters.append({'robot_description':robot_desc_xml})
+    parameters.append({'use_sim_time': True})
+    robot_state_publisher = Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='both',
+        parameters=parameters,
+        namespace=robot_name
+    )    
+    spawner = Node(
+        package='gazebo_ros',
+        executable='spawn_entity.py',
+        output='screen',
+        arguments=[
+            '-topic', robot_name+'/robot_description',
+            '-entity', robot_name+'/dummy',
+            '-x', str(position[0]),
+            '-y', str(position[1]),
+            '-z', str(position[2]),
+            '-R', '0.0',
+            '-P', '0.0',
+            '-Y', '0.0',
+        ]
+    )
+    
+    actions = []
+    actions.append(robot_state_publisher)
+    actions.append(spawner)
+    
+    return actions
+def recursive_yaml(value):
+    if isinstance(value,dict):
+        new_dict = dict()
+        for k,v in value.items():
+            new_dict[k] = recursive_yaml(v)
+        return new_dict
+    if isinstance(value,list):
+        new_list = list()
+        for e in value:
+            new_list.append(e)
+        return new_list
+    else:
+        return value
+def generate_controller_config(controller,namespace):
+    pass
+def generate_launch_description():
+    dh_parameters = ShareFile('dummy_description','config','DH_parameters.yaml')
+    robot_description = ShareFile('dummy_gazebo','robot','dummy.xacro')
+    
+    gazebo_server,gazebo_client = launch_action_gazebo()
+    launch_description = LaunchDescription()
+    launch_description.add_action(gazebo_server)
+    launch_description.add_action(gazebo_client)
+    
+    N = 3
+    for i in range(N):
+        robot_name = 'dummy_'+str(i+1)
+        actions = launch_action_robot_spawner(
+            dh_parameters,
+            robot_description,
+            [0.0,-2*i,0.0],
+            robot_name
+        )
+        if i == 0 :
+            for action in actions:
+                launch_description.add_action(action)  
+        else:
+            spawn_event = RegisterEventHandler(
+                OnProcessExit(
+                    target_action=previous_action,
+                    on_exit= TimerAction(period=2.0,actions=actions)
+                )
+            )
+            launch_description.add_action(spawn_event)
+        previous_action = actions[-1]
+    return launch_description
+    
