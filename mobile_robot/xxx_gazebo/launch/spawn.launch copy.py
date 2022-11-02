@@ -25,7 +25,7 @@ from launch.actions import IncludeLaunchDescription, RegisterEventHandler, LogIn
 from launch.event_handlers import OnProcessStart, OnProcessExit, OnExecutionComplete
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
-
+from dummy_description.DH2Transform import DH2Transform
 class ShareFile():
     def __init__(self,package,folder,file):
         self.package_name = package
@@ -53,8 +53,9 @@ def launch_action_gazebo():
         ])
     )
     return gazebo_server,gazebo_client
-def launch_action_robot_spawner(robot_description,controller,position,robot_name=''):
+def launch_action_robot_spawner(dh_parameters,robot_description,controller,position,robot_name=''):
     # robot_state_publisher
+    DH2Transform(dh_parameters.package_name,dh_parameters.folder,dh_parameters.file) 
     parameters = []
     if robot_name:
         robot_desc_xml = xacro.process_file(robot_description.path,mappings={'robot_name':robot_name}).toxml()
@@ -72,7 +73,7 @@ def launch_action_robot_spawner(robot_description,controller,position,robot_name
         namespace=robot_name
     )    
 
-    generate_controller_config(controller,robot_name)
+    controller_config = generate_controller_config(controller,robot_name)
 
     spawner = Node(
         package='gazebo_ros',
@@ -80,7 +81,7 @@ def launch_action_robot_spawner(robot_description,controller,position,robot_name
         output='screen',
         arguments=[
             '-topic', robot_name+'/robot_description',
-            '-entity', robot_name+'/xxx',
+            '-entity', robot_name+'/dummy',
             '-x', str(position[0]),
             '-y', str(position[1]),
             '-z', str(position[2]),
@@ -90,10 +91,10 @@ def launch_action_robot_spawner(robot_description,controller,position,robot_name
         ]
     )
 
-    velocity_controllers = Node(
+    joint_trajectory_controller = Node(
         package='controller_manager',
         executable='spawner.py',
-        arguments=['velocity_controllers','--controller-manager',robot_name+'/controller_manager']
+        arguments=['joint_trajectory_position_controller','--controller-manager',robot_name+'/controller_manager']
     )
 
     joint_state_broadcaster = Node(
@@ -102,11 +103,18 @@ def launch_action_robot_spawner(robot_description,controller,position,robot_name
         arguments=['joint_state_broadcaster','--controller-manager',robot_name+'/controller_manager']
     )
 
+    trajectory_generator = Node(
+        package='dummy_control',
+        executable='trajectory_generator.py',
+        namespace=robot_name,
+        parameters=[controller_config]
+    )
     
     actions = []
     actions.append(robot_state_publisher)
     actions.append(spawner)
-    actions.append(velocity_controllers)
+    actions.append(joint_trajectory_controller)
+    actions.append(trajectory_generator)
     actions.append(joint_state_broadcaster)
 
     return actions
@@ -121,9 +129,9 @@ def generate_controller_config(controller:ShareFile,namespace):
         yaml.dump(new_doc,file)
     return new_controller_path
 def generate_launch_description():
-    
-    robot_description = ShareFile('xxx_gazebo','robot','xxx.xacro')
-    controller = ShareFile('xxx_gazebo','config','_controller_config.yaml')
+    dh_parameters = ShareFile('dummy_description','config','DH_parameters.yaml')
+    robot_description = ShareFile('dummy_gazebo','robot','dummy.xacro')
+    controller = ShareFile('dummy_gazebo','config','_controller_config.yaml')
     
     gazebo_server,gazebo_client = launch_action_gazebo()
     launch_description = LaunchDescription()
@@ -132,8 +140,9 @@ def generate_launch_description():
     
     N = 3
     for i in range(N):
-        robot_name = 'xxx_'+str(i+1)
+        robot_name = 'dummy_'+str(i+1)
         actions = launch_action_robot_spawner(
+            dh_parameters,
             robot_description,
             controller,
             [0.0,-2*i,0.0],
