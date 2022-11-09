@@ -27,7 +27,6 @@ class CalibrationGen(Node):
 
         ### Add codes here
         
-        x = np.random.multivariate_normal(self.properties['mean'],self.properties['covariance'],1)
         ###
         msg = Float64MultiArray()
         msg.data = x[0].tolist()
