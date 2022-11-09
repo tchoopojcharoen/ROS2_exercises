@@ -9,6 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 import numpy as np
 from calibration_interfaces.action import Calibrate
 import os, yaml
+import subprocess
 
 class CalibrationActionServer(Node):
     def __init__(self):
@@ -18,7 +19,7 @@ class CalibrationActionServer(Node):
         self.sensor_data = Float64MultiArray()
         self.collected_data = []
         self.get_logger().info('Start /calibration action server')
-        
+
     def execute_callback(self,goal_handle):
         self.get_logger().info(f'Executing action...')
         self.collected_data = []
@@ -32,18 +33,23 @@ class CalibrationActionServer(Node):
         # get result to succeed
         goal_handle.succeed()
         data_array = np.array(self.collected_data)
-            
+
         # return absolute distance as result
         result = Calibrate.Result()
 
         ### Add codes here
-        
+        # Input is in 2 dimension
+        mean = np.mean(data_array, axis=0).tolist()
+        covariance = np.cov(data_array.T).flatten().tolist()
+        # Assign to rosmsg
+        result.mean = mean
+        result.covariance = covariance
         ###
         calibration_path = get_package_share_directory('calibration')
         file = os.path.join(calibration_path,'config','sensor_properties.yaml')
         with open(file,'w') as f:
-            yaml.dump({'mean': result.mean, 'covariance': result.covariance},f)
-        os.system("gedit "+file)
+            yaml.dump({'mean': mean, 'covariance': covariance},f, Dumper=yaml.SafeDumper)
+        subprocess.Popen(["gedit", file], stdin=open(os.devnull, 'r'))
         return result
 class Calibration(Node):
     def __init__(self,action_server):
