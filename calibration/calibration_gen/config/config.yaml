@@ -1,8 +1,8 @@
-mean: 
+### add config here
+mean:
   - 1.0
   - 2.0
-covariance: 
-  - - 0.1
-    - 0.0
-  - - 0.0
-    - 0.2
+covariance: [
+  [1.0, 0.0],
+  [0.0, 2.0]
+]
