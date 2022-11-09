@@ -1,0 +1,30 @@
+# type of joints
+types:
+- "revolute"
+- "revolute"
+- "revolute"
+# DH-parameters 
+DH:
+# Link_0 => Link_1 
+- - 0.0 
+  - 0.0
+  - 0.0
+  - 1.0
+# Link_1 => Link_2 
+- - 90.0
+  - 0.5
+  - 90.0
+  - 0.0
+# Link_2 => Link_3 
+- - 0.0 
+  - 0.75
+  - -90.0
+  - 0.0
+ee_orientation: 
+- -90.0
+- 0.0
+- 0.0
+ee_position:
+- 1.25
+- 0.25
+- 0.0
