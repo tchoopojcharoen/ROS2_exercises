@@ -17,6 +17,7 @@ class CalibrationActionServer(Node):
         self.action_server = ActionServer(self,Calibrate,'/calibrate',self.execute_callback)
         self.sensor_data = Float64MultiArray()
         self.collected_data = []
+        self.get_logger().info('Start /calibration action server')
         
     def execute_callback(self,goal_handle):
         self.get_logger().info(f'Executing action...')
@@ -36,9 +37,7 @@ class CalibrationActionServer(Node):
         result = Calibrate.Result()
 
         ### Add codes here
-        result.mean = np.mean(data_array,0).tolist()
-        shape = np.cov(data_array.T).shape
-        result.covariance = np.reshape(np.cov(data_array.T),(shape[0]*shape[1])).tolist()
+        
         ###
         calibration_path = get_package_share_directory('calibration')
         file = os.path.join(calibration_path,'config','sensor_properties.yaml')
